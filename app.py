@@ -1,4 +1,4 @@
-from flask import Flask, request
+from flask import Flask, request, render_template
 from flask_restful import Resource, Api
 from werkzeug.utils import secure_filename
 from math import radians, cos, sin, sqrt, atan2
@@ -57,16 +57,31 @@ def extract_bindata(bin_file):
 #         bin_file.save(filename)
 #         df, df_CTUN, df_CMD, df_waypoints = extract_bindata(filename)
 #         return {'data': df.to_dict(), 'CTUN': df_CTUN.to_dict(), 'CMD': df_CMD.to_dict(), 'waypoints': df_waypoints.to_dict()}
+@app.route('/')
+def home():
+    return render_template('index.html')
+
 class FlightLogAnalyzer(Resource):
     def post(self):
         bin_file = request.files['file']
         filename = secure_filename(bin_file.filename)
         bin_file.save(filename)
         km_travelled, mah_consumed, flight_time = extract_bindata(filename)
-        return {'km_travelled': km_travelled, 'mah_consumed': mah_consumed, 'flight_time': flight_time}
+        return render_template('analyze.html', km_travelled=km_travelled, mah_consumed=mah_consumed, flight_time=flight_time)
+
+# class FlightLogAnalyzer(Resource):
+#     def post(self):
+#         bin_file = request.files['file']
+#         filename = secure_filename(bin_file.filename)
+#         bin_file.save(filename)
+#         km_travelled, mah_consumed, flight_time = extract_bindata(filename)
+#         return {'km_travelled': km_travelled, 'mah_consumed': mah_consumed, 'flight_time': flight_time}
 
 
 api.add_resource(FlightLogAnalyzer, '/analyze')
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', debug=True)
+
+
+
